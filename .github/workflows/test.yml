@@ -1,0 +1,38 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate manifest
+        run: |
+          node -e "
+          const m = require('./manifest.json');
+          const fs = require('fs');
+          const assert = require('assert');
+          assert.ok(m.id && /^[@a-z0-9\-_./]+$/i.test(m.id), 'bad id');
+          assert.ok(m.name && m.name.length, 'bad name');
+          assert.match(m.version, /^\d+\.\d+\.\d+/, 'bad version');
+          assert.ok(fs.existsSync(m.main), 'main entry missing: ' + m.main);
+          assert.ok(m.engines && m.engines.alma, 'engines.alma missing');
+          assert.ok(m.type === 'transform' || (Array.isArray(m.type) && m.type.includes('transform')), 'type must be transform');
+          const id = m.id;
+          const dir = process.cwd().split('/').pop();
+          assert.strictEqual(id, dir, 'manifest id must equal directory name');
+          console.log('manifest OK:', id + '@' + m.version);
+          "
+      - name: Syntax check
+        run: |
+          npx --yes esbuild main.ts --bundle --outfile=/tmp/out.mjs \
+            --target=node22 --format=esm --platform=node \
+            --external:electron --external:zod --external:alma-plugin-api
+          echo "bundles cleanly"

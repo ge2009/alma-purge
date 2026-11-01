@@ -1,0 +1,80 @@
+{
+  "id": "alma-purge",
+  "name": "Purge",
+  "version": "0.1.0",
+  "description": "Reduce interaction friction: inject a tail-end directive into user messages so the agent executes to completion instead of stopping to ask, with idempotent de-duplication and per-preset control.",
+  "author": {
+    "name": "Alma's owner"
+  },
+  "main": "main.ts",
+  "engines": {
+    "alma": "^0.1.0"
+  },
+  "type": "transform",
+  "permissions": [
+    "chat:read",
+    "chat:write",
+    "settings:write",
+    "notifications"
+  ],
+  "activationEvents": [
+    "onStartup"
+  ],
+  "keywords": [
+    "purge",
+    "prompt",
+    "transform",
+    "autonomy",
+    "friction"
+  ],
+  "license": "MIT",
+  "contributes": {
+    "commands": [
+      {
+        "id": "alma-purge.toggle",
+        "title": "Toggle Purge",
+        "category": "Purge"
+      },
+      {
+        "id": "alma-purge.status",
+        "title": "Show Purge Status",
+        "category": "Purge"
+      }
+    ],
+    "configuration": {
+      "title": "Purge",
+      "properties": {
+        "almaPurge.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Master switch. When off, no injection happens at all."
+        },
+        "almaPurge.preset": {
+          "type": "string",
+          "enum": [
+            "minimal",
+            "standard",
+            "strict"
+          ],
+          "default": "standard",
+          "description": "How forceful the injected directive is. minimal = stop asking; standard = stop asking + finish the task; strict = adds an explicit anti-hedging clause."
+        },
+        "almaPurge.boost": {
+          "type": "boolean",
+          "default": true,
+          "description": "Append an extra short reinforcement line at the very end. Longer directives get diluted; this keeps the last thing the model reads on-topic."
+        },
+        "almaPurge.customInstructions": {
+          "type": "string",
+          "default": "",
+          "description": "Extra instructions appended after the preset text."
+        },
+        "almaPurge.debug": {
+          "type": "boolean",
+          "default": false,
+          "description": "Log every injection decision (injected / skipped / why)."
+        }
+      }
+    }
+  }
+}
